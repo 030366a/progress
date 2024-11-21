@@ -364,7 +364,7 @@ void print_bar(float perc, int char_available)
     num = (char_available / 100.0) * perc;
     
     for (i = 0 ; i < num-1 ; i++) {
-        putchar('=');
+        putchar('-');
     }
     putchar('>');
     i++;
