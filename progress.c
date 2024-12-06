@@ -82,50 +82,59 @@ double throughput_wait_secs = 1;
 
 WINDOW *mainwin;
 
-bool is_numeric(char *str) {
+bool is_numeric(char *str)
+{
     while (*str) {
         if (isdigit(*str)) {
             str++;
-        } else {
+        }
+        else {
             return false;
         }
     }
     return true;
 }
 
-void nprintf(char *format, ...) {
+void nprintf(char *format, ...)
+{
     va_list args;
 
     va_start(args, format);
     if (flag_monitor || flag_monitor_continuous) {
         vw_printw(mainwin, format, args);
-    } else {
+    }
+    else {
         vprintf(format, args);
     }
     va_end(args);
 }
 
-void nfprintf(FILE *file, char *format, ...) {
+void nfprintf(FILE *file, char *format, ...)
+{
     va_list args;
 
     va_start(args, format);
     if (flag_monitor || flag_monitor_continuous) {
         vw_printw(mainwin, format, args);
-    } else {
+    }
+    else {
         vfprintf(file, format, args);
     }
     va_end(args);
 }
 
-void nperror(const char *s) {
+void nperror(const char *s)
+{
     if (flag_monitor || flag_monitor_continuous) {
         printw("%s:%s", s, strerror(errno));
-    } else {
+    }
+    else {
         perror(s);
     }
 }
 
-bool is_ignored_file(char *str) {
+bool is_ignored_file(char *str)
+{
     int i;
     for (i = 0; i < ignore_file_list_cnt; i++) {
         if (strcmp(ignore_file_list[i], str) == 0) {
@@ -135,7 +144,8 @@ bool is_ignored_file(char *str) {
     return false;
 }
 
-int find_pid_by_id(pid_t pid, pidinfo_t *pid_list) {
+int find_pid_by_id(pid_t pid, pidinfo_t *pid_list)
+{
     char fullpath_exe[MAXPATHLEN + 1];
     char exe[MAXPATHLEN + 1];
     ssize_t len;
@@ -145,7 +155,8 @@ int find_pid_by_id(pid_t pid, pidinfo_t *pid_list) {
     len = readlink(fullpath_exe, exe, MAXPATHLEN);
     if (len == -1) {
         return 0;
-    } else {
+    }
+    else {
         exe[len] = 0;
     }
 
@@ -154,7 +165,8 @@ int find_pid_by_id(pid_t pid, pidinfo_t *pid_list) {
     return 1;
 }
 
-int find_pids_by_binary_name(char *bin_name, pidinfo_t *pid_list, int max_pids) {
+int find_pids_by_binary_name(char *bin_name, pidinfo_t *pid_list, int max_pids)
+{
     DIR *proc;
     struct dirent *direntp;
     struct stat stat_buf;
@@ -183,7 +195,8 @@ int find_pids_by_binary_name(char *bin_name, pidinfo_t *pid_list, int max_pids) 
         if (stat(fullpath_dir, &stat_buf) == -1) {
             if (flag_debug) {
                 nperror("stat (find_pids_by_binary_name)");
-            } else {
+            }
+            else {
                 continue;
             }
         }
@@ -200,7 +213,8 @@ int find_pids_by_binary_name(char *bin_name, pidinfo_t *pid_list, int max_pids) 
                 // Will be mostly "Permission denied"
                 //~ nperror("readlink");
                 continue;
-            } else {
+            }
+            else {
                 exe[len] = 0;
             }
 
@@ -219,7 +233,8 @@ int find_pids_by_binary_name(char *bin_name, pidinfo_t *pid_list, int max_pids) 
     return pid_count;
 }
 
-int find_fd_for_pid(pid_t pid, int *fd_list, int max_fd) {
+int find_fd_for_pid(pid_t pid, int *fd_list, int max_fd)
+{
     DIR *proc;
     struct dirent *direntp;
     char path_dir[MAXPATHLEN + 1];
@@ -254,7 +269,8 @@ int find_fd_for_pid(pid_t pid, int *fd_list, int max_fd) {
         if (stat(fullpath, &stat_buf) == -1) {
             if (flag_debug) {
                 nperror("stat (find_fd_for_pid)");
-            } else {
+            }
+            else {
                 continue;
             }
         }
@@ -268,7 +284,8 @@ int find_fd_for_pid(pid_t pid, int *fd_list, int max_fd) {
         len = readlink(fullpath, link_dest, MAXPATHLEN);
         if (len == -1) {
             continue;
-        } else {
+        }
+        else {
             link_dest[len] = 0;
         }
 
@@ -294,7 +311,8 @@ int find_fd_for_pid(pid_t pid, int *fd_list, int max_fd) {
     return count;
 }
 
-bool get_fdinfo(pid_t pid, int fdnum, fdinfo_t *fd_info) {
+bool get_fdinfo(pid_t pid, int fdnum, fdinfo_t *fd_info)
+{
     struct stat stat_buf;
     char fdpath[MAXPATHLEN + 1];
     char line[LINE_LEN];
@@ -312,7 +330,8 @@ bool get_fdinfo(pid_t pid, int fdnum, fdinfo_t *fd_info) {
     if (len == -1) {
         //~ nperror("readlink");
         return false;
-    } else {
+    }
+    else {
         fd_info->name[len] = 0;
     }
 
@@ -320,7 +339,8 @@ bool get_fdinfo(pid_t pid, int fdnum, fdinfo_t *fd_info) {
         //~ printf("[debug] %i - %s\n",pid,fd_info->name);
         if (flag_debug) {
             nperror("stat (get_fdinfo)");
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -345,7 +365,8 @@ bool get_fdinfo(pid_t pid, int fdnum, fdinfo_t *fd_info) {
         }
 
         close(fd);
-    } else {
+    }
+    else {
         fd_info->size = stat_buf.st_size;
     }
 
@@ -375,9 +396,11 @@ bool get_fdinfo(pid_t pid, int fdnum, fdinfo_t *fd_info) {
 
     if ((flags & O_ACCMODE) == O_RDONLY) {
         fd_info->mode = PM_READ;
-    } else if ((flags & O_ACCMODE) == O_WRONLY) {
+    }
+    else if ((flags & O_ACCMODE) == O_WRONLY) {
         fd_info->mode = PM_WRITE;
-    } else if ((flags & O_ACCMODE) == O_RDWR) {
+    }
+    else if ((flags & O_ACCMODE) == O_RDWR) {
         fd_info->mode = PM_READWRITE;
     }
 
@@ -385,7 +408,8 @@ bool get_fdinfo(pid_t pid, int fdnum, fdinfo_t *fd_info) {
     return true;
 }
 
-void print_bar(float perc, int char_available) {
+void print_bar(float perc, int char_available)
+{
     int i;
     int num;
 
@@ -402,7 +426,8 @@ void print_bar(float perc, int char_available) {
     }
 }
 
-void parse_options(int argc, char *argv[]) {
+void parse_options(int argc, char *argv[])
+{
     static struct option long_options[] = {
         {"version",              no_argument,       0, 'v'},
         {"quiet",                no_argument,       0, 'q'},
@@ -431,7 +456,9 @@ void parse_options(int argc, char *argv[]) {
         c = getopt_long(argc, argv, options_string, long_options, &option_index);
 
         // no more options
-        if (c == -1) break;
+        if (c == -1) {
+           break;
+        }
 
         switch (c) {
             case 'v':
@@ -445,8 +472,9 @@ void parse_options(int argc, char *argv[]) {
                     printf("Shows progress on file manipulations (cp, mv, dd, ...)\n\n");
 
                     printf("Monitored commands (default, you can add virtually anything):\n");
-                    for(i = 0; i < proc_names_cnt; i++)
+                    for (i = 0; i < proc_names_cnt; i++) {
                         printf("%s ", proc_names[i]);
+                    }
                     printf("\n\n");
 
                     printf("Usage: %s [-qdwmM] [-W secs] [-c command] [-p pid]\n", argv[0]);
@@ -485,7 +513,8 @@ void parse_options(int argc, char *argv[]) {
                 assert(ignore_file_list != NULL);
                 if (rp) {
                     ignore_file_list[ignore_file_list_cnt - 1] = rp;
-                } else {
+                }
+                else {
                     ignore_file_list[ignore_file_list_cnt - 1] = strdup(optarg);  // file does not exist yet, it seems
                 }
                 break;
@@ -531,11 +560,14 @@ void parse_options(int argc, char *argv[]) {
             case 'o':
                 if (strcmp("r", optarg) == 0) {
                     flag_open_mode = PM_READ;
-                } else if (strcmp("w", optarg) == 0) {
+                }
+                else if (strcmp("w", optarg) == 0) {
                     flag_open_mode = PM_WRITE;
-                } else if (strcmp("u", optarg) == 0) {
+                }
+                else if (strcmp("u", optarg) == 0) {
                     flag_open_mode = PM_READWRITE;
-                } else {
+                }
+                else {
                     fprintf(stderr, "Invalid --open-mode option value '%s'.\n", optarg);
                     exit(EXIT_FAILURE);
                 }
@@ -553,7 +585,8 @@ void parse_options(int argc, char *argv[]) {
     }
 }
 
-void print_eta(time_t seconds) {
+void print_eta(time_t seconds)
+{
     struct tm *p;
 
     if (!seconds) {
@@ -569,7 +602,8 @@ void print_eta(time_t seconds) {
     nprintf("%d:%02d:%02d", p->tm_hour, p->tm_min, p->tm_sec);
 }
 
-void copy_and_clean_results(result_t *results, int result_count, bool copy) {
+void copy_and_clean_results(result_t *results, int result_count, bool copy)
+{
     static result_t old_results[MAX_RESULTS];
     static int old_result_count = 0;
 
@@ -591,13 +625,15 @@ void copy_and_clean_results(result_t *results, int result_count, bool copy) {
                 free_hlist(old_results[i].hbegin);
             }
         }
-    } else {
+    }
+    else {
         memcpy(old_results, results, sizeof(old_results));
         old_result_count = result_count;
     }
 }
 
-int monitor_processes(int *nb_pid) {
+int monitor_processes(int *nb_pid)
+{
     int pid_count, fd_count, result_count;
     int i, j;
     pidinfo_t pidinfo_list[MAX_PIDS];
@@ -655,7 +691,9 @@ int monitor_processes(int *nb_pid) {
     *nb_pid = pid_count;
 
     if (!pid_count) {
-        if (flag_quiet) return 0;
+        if (flag_quiet) {
+           return 0;
+        }
         if (flag_monitor || flag_monitor_continuous) {
             clear();
             refresh();
@@ -695,7 +733,9 @@ int monitor_processes(int *nb_pid) {
             get_fdinfo(pidinfo_list[i].pid, fdnum_list[j], &fdinfo);
 
             // only select files with specified open mode
-            if (flag_open_mode && flag_open_mode != fdinfo.mode) continue;
+            if (flag_open_mode && flag_open_mode != fdinfo.mode) {
+               continue;
+            }
 
             if (fdinfo.size > max_size) {
                 biggest_fd = fdinfo;
@@ -723,7 +763,9 @@ int monitor_processes(int *nb_pid) {
     }
 
     // wait a bit, so we can estimate the throughput
-    if (flag_throughput && !first_pass) usleep(1000000 * throughput_wait_secs);
+    if (flag_throughput && !first_pass) {
+       usleep(1000000 * throughput_wait_secs);
+    }
     if (flag_monitor || flag_monitor_continuous) {
         clear();
     }
@@ -731,16 +773,21 @@ int monitor_processes(int *nb_pid) {
     for (i = 0; i < result_count; i++) {
         if (flag_throughput && !first_pass) {
             still_there = get_fdinfo(results[i].pid.pid, results[i].fd.num, &fdinfo);
-            if (still_there && strcmp(results[i].fd.name, fdinfo.name)) still_there = false;  // still there, but it's not the same file !
-        } else
+            if (still_there && strcmp(results[i].fd.name, fdinfo.name)) {
+               still_there = false;  // still there, but it's not the same file !
+            }
+        }
+        else {
             still_there = false;
+        }
 
         if (!still_there) {
             // pid is no more here (or no throughput was asked), use initial info
             format_size(results[i].fd.pos, fpos);
             format_size(results[i].fd.size, fsize);
             perc = ((double)100 / (double)results[i].fd.size) * (double)results[i].fd.pos;
-        } else {
+        }
+        else {
             // use the newest info
             format_size(fdinfo.pos, fpos);
             format_size(fdinfo.size, fsize);
@@ -776,7 +823,9 @@ int monitor_processes(int *nb_pid) {
     }
 
     if (flag_monitor || flag_monitor_continuous) {
-        if (!result_count) nprintf("No PID(s) currently monitored\n");
+        if (!result_count) {
+           nprintf("No PID(s) currently monitored\n");
+        }
         refresh();
     }
     copy_and_clean_results(results, result_count, false);
@@ -784,7 +833,8 @@ int monitor_processes(int *nb_pid) {
     return 0;
 }
 
-void int_handler(int sig) {
+void int_handler(int sig)
+{
     if (flag_monitor || flag_monitor_continuous) {
         endwin();
     }
@@ -792,7 +842,8 @@ void int_handler(int sig) {
 }
 
 // Setup the default commands as a dynamic list
-void populate_proc_names() {
+void populate_proc_names()
+{
     int i;
     for (i = 0; default_proc_names[i]; i++) {
         proc_names_cnt++;
@@ -802,7 +853,8 @@ void populate_proc_names() {
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     pid_t nb_pid;
     struct winsize ws;
     wordexp_t env_wordexp;
@@ -833,7 +885,8 @@ int main(int argc, char *argv[]) {
     if (flag_monitor || flag_monitor_continuous) {
         setlocale(LC_CTYPE, "");
 
-        mainwin = initscr() if (mainwin == NULL) {
+        mainwin = initscr();
+        if (mainwin == NULL) {
             fprintf(stderr, "Error initialising ncurses.\n");
             exit(EXIT_FAILURE);
         }
@@ -854,7 +907,8 @@ int main(int argc, char *argv[]) {
             }
         } while ((flag_monitor && nb_pid) || flag_monitor_continuous);
         endwin();
-    } else {
+    }
+    else {
         set_hlist_size(throughput_wait_secs);
         monitor_processes(&nb_pid);
     }
