@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//
+
 #include <assert.h>
 #include <ctype.h>
 #include <curses.h>
@@ -33,17 +33,17 @@
 #include <stdarg.h>
 #include <time.h>
 #include <unistd.h>
-//
+
 #include <getopt.h>
 #include <wordexp.h>
-//
+
 #include <sys/ioctl.h>
 
 // for the BLKGETSIZE64 code section
 #include <fcntl.h>
 #include <linux/fs.h>
 #include <sys/ioctl.h>
-//
+
 #include "hlist.h"
 #include "progress.h"
 #include "sizes.h"
